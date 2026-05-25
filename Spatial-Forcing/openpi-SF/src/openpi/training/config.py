@@ -908,6 +908,31 @@ _CONFIGS = [
         wandb_enabled=False,
     ),
     TrainConfig(
+        # SF + pi0 multi-task fine-tune on the merged jisang_robot dataset
+        # (pick_and_place + chocomilk + pot + kitchen, 4 tasks, 838 episodes / 254947 frames).
+        # Task text is read per-episode via tasks.parquet, so the model sees all 4 prompts.
+        name="pi0_align_jisang_combined",
+        model=pi0_config.Pi0Config(action_horizon=10),
+        data=LeRobotJisangDataConfig(
+            repo_id="local/jisang_combined",
+            local_data_root="/home/cvlab/project/realsangbeom/robot/jisang_robot/lerobot_datasets/local__jisang_combined",
+        ),
+        weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
+        pytorch_weight_path="./checkpoints/pi0_base_full_torch",
+        vggt_weight_path="./checkpoints/vggt",
+        vla_layers_align=12,
+        vggt_layers_align=-1,
+        pooling_func="bilinear",
+        use_vggt_pe=True,
+        use_vlm_norm=True,
+        align_loss_coeff=0.5,
+        #
+        num_train_steps=100_000,
+        batch_size=16,
+        ema_decay=None,
+        wandb_enabled=True,
+    ),
+    TrainConfig(
         name="pi0_align_aloha_place_block",  # <config_name>
         model=pi0_config.Pi0Config(),
         data=LeRobotAlohaDataConfig(
